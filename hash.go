@@ -1,8 +1,9 @@
 package main
 
 import (
-	"crypto/md5"
 	"math/big"
+
+	"golang.org/x/crypto/sha3"
 )
 
 type Hasher interface {
@@ -16,7 +17,7 @@ func NewHashService() *HashService {
 }
 
 func (h *HashService) CalculateHash(key string) *big.Int {
-	hash := md5.Sum([]byte(key))
+	hash := sha3.Sum256([]byte(key))
 	hashInt := new(big.Int).SetBytes(hash[:])
 	return hashInt
 }

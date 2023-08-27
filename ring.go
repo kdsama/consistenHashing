@@ -70,7 +70,7 @@ func (r *RingService) IterateNodes() {
 
 	for n != nil && n != head {
 		n = n.Next
-		fmt.Println("Previous and Current  ", n.Prev, n)
+		fmt.Println("Val of ", n.Val, "Distance from previous ", r.H.Distance(n.Val, n.Prev.Val))
 		i++
 	}
 }
@@ -92,5 +92,4 @@ func (r *RingService) FindMinimumDifference(key string) {
 		}
 		current = current.Next
 	}
-	fmt.Println(Node.Key, Difference, "For the key", key)
 }
