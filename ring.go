@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/big"
 )
 
 type Ringer interface{}
 
-type KVStore map[string]string
+var KVStore = map[*big.Int]string{}
 
 type CircularListNode struct {
-	Key      string
-	Val      *big.Int
-	PrevDist *big.Int
-	PrevKey  string
-	Next     *CircularListNode
+	Key  string
+	Val  *big.Int
+	Prev *CircularListNode
+	Next *CircularListNode
 }
 
 type RingService struct {
@@ -28,46 +28,39 @@ func NewRingService(h Hasher) *RingService {
 	}
 }
 func (r *RingService) PlaceNodeHash(key string) {
-	tmp := r.Head
 	constant := r.H.CalculateHash(key)
-	if tmp == nil {
-		r.Head = &CircularListNode{
-			Key: key,
-			Val: constant,
-		}
+	if _, ok := KVStore[constant]; ok {
+		log.Fatal("HAsh already exists ")
+	}
+	newNode := &CircularListNode{
+		Key: key,
+		Val: constant,
+	}
+	KVStore[constant] = key
+	if r.Head == nil {
+		r.Head = newNode
 		r.Head.Next = r.Head
-		r.Head.PrevDist = big.NewInt(0)
+		r.Head.Prev = r.Head
 		return
 	}
 
-	Node := r.Head
-	Diff := r.H.Distance(constant, Node.Val)
-	current := Node.Next
-	// prev := Node
-	for current != nil && current != Node {
+	current := r.Head
+	minDist := r.H.Distance(constant, current.Val)
+	closestNode := current
+
+	for current.Next != r.Head {
 		distance := r.H.Distance(constant, current.Val)
-		if distance.Sign() > 0 && distance.Cmp(Diff) < 0 {
-			Node = current
-			Diff = Diff.Set(distance)
+		if distance.Cmp(minDist) < 0 {
+			minDist.Set(distance)
+			closestNode = current
 		}
-		// prev = current
 		current = current.Next
 	}
-	// Need to do the circular bit as well
-	// we found a node with minimum distance
-	// lets say it is b
-	// we are trying to insert c
-	// b.Next = c
-	newNode := &CircularListNode{
-		Key:     key,
-		Val:     constant,
-		PrevKey: Node.Key,
-	}
-	fmt.Println(" previous node and New Node ", Node, newNode)
-	tt := Node.Next
-	Node.Next = newNode
-	newNode.PrevDist = r.H.Distance(newNode.Val, Node.Val)
-	newNode.Next = tt
+
+	newNode.Next = closestNode.Next
+	closestNode.Next = newNode
+	newNode.Prev = closestNode
+	newNode.Next.Prev = newNode
 }
 
 func (r *RingService) IterateNodes() {
@@ -77,7 +70,7 @@ func (r *RingService) IterateNodes() {
 
 	for n != nil && n != head {
 		n = n.Next
-		fmt.Println("rev and key ", n.PrevKey, n.Key)
+		fmt.Println("Previous and Current  ", n.Prev, n)
 		i++
 	}
 }

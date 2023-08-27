@@ -9,7 +9,7 @@ func main() {
 	h := NewHashService()
 	r := NewRingService(h)
 	a := []byte{}
-	for i := 0; i < 26; i = i + 2 {
+	for i := 0; i < 27; i = i + 2 {
 		rand.Seed(time.Now().UnixMilli())
 		time.Sleep(100 * time.Millisecond)
 		a = append(a, (byte('a') + uint8(i)))
@@ -18,6 +18,9 @@ func main() {
 
 	r.IterateNodes()
 	for i, v := range a {
+		if i+1 >= 25 {
+			break
+		}
 		r.FindMinimumDifference(string(v + uint8(i+1)))
 	}
 
