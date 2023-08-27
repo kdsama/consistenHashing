@@ -81,15 +81,20 @@ func (r *RingService) FindMinimumDifference(key string) {
 	}
 	constant := r.H.CalculateHash(key)
 	Node := r.Head
-	Difference := new(big.Int).Abs(new(big.Int).Sub(constant, Node.Val))
+	Difference := r.H.Distance(constant, Node.Val)
 	current := Node.Next
 
 	for current != Node {
-		distance := new(big.Int).Abs(new(big.Int).Sub(constant, current.Val))
+		distance := r.H.Distance(constant, current.Val)
 		if distance.Cmp(Difference) < 0 {
 			Node = current
 			Difference = Difference.Set(distance)
 		}
 		current = current.Next
 	}
+}
+
+func (r *RingService) Remove(key string) error {
+	// in case of removal
+	return nil
 }
